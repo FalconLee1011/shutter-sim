@@ -1,0 +1,26 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+opencv-python = "*"
+numpy = "*"
+
+[dev-packages]
+pylint = "*"
+autoflake = "*"
+
+[requires]
+python_version = "3.11"
+
+[tool.pylint.main]
+extension-pkg-allow-list = ["cv2"]
+
+[tool.pylint.typecheck]
+generated-members = ["cv2.*"]
+
+[scripts]
+shutter-sim = "python -m shutter_sim"
+lint = "pylint ./shutter_sim"
+lint-fix = "autoflake -r --in-place --remove-unused-variables ./shutter_sim"

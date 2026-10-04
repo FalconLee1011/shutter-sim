@@ -1,0 +1,12 @@
+{
+  "python-envs.defaultEnvManager": "ms-python.python:pipenv",
+  "python-envs.workspaceSearchPaths": [
+    ".venv",
+    "./**/.venv",
+    "./envs/**",
+    "./my-custom-env"
+  ],
+  "python.analysis.autoImportCompletions": true,
+  "pylint.importStrategy": "fromEnvironment",
+  "pylint.args": []
+}
