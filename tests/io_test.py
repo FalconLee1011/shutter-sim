@@ -46,6 +46,6 @@ def test_npy_round_trip_keeps_bayer_plane(tmp_path, bayer_plane):
 
 
 def test_save_image_creates_missing_directory(tmp_path, linear_bgr):
-    root = tmp_path / "outputs" / "IMG_0889"
+    root = tmp_path / "outputs" / "IMG_5229s"
     save_image(str(root), "1_before_tm", linear_bgr, raw=False)
     assert (root / "1_before_tm.tiff").is_file()

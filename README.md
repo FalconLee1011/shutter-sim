@@ -14,15 +14,15 @@ pipenv install
 Choose an action explicitly: `--preview` to view results, `--output` to save them, or both. For example, preview an image:
 
 ```bash
-pipenv run shutter-sim -i ./IMG_0889.JPG --preview
+pipenv run shutter-sim -i ./example_data/IMG_5229s.JPG --preview
 ```
 
 The equivalent module command is `pipenv run python -m shutter_sim`. Export TIFF files, export NumPy arrays, or preview and export the same run:
 
 ```bash
-pipenv run shutter-sim -i ./IMG_0889.JPG --output --output_root ./outputs
-pipenv run shutter-sim -i ./IMG_0889.JPG --output --output_format raw
-pipenv run shutter-sim -i ./IMG_0889.JPG --preview --output --output_format tiff
+pipenv run shutter-sim -i ./example_data/IMG_5229s.JPG --output --output_root ./outputs
+pipenv run shutter-sim -i ./example_data/IMG_5229s.JPG --output --output_format raw
+pipenv run shutter-sim -i ./example_data/IMG_5229s.JPG --preview --output --output_format tiff
 pipenv run shutter-sim --help
 ```
 
@@ -52,10 +52,10 @@ Press a key while an OpenCV window is focused to close the previews. When both a
 
 ## Export
 
-With `--output`, the program creates `<output_root>/<input_stem>/` and writes 11 files. The default format is uncompressed float32 TIFF; `--output_format tiff` can also be specified explicitly. After export, the program prints the output directory. For `IMG_0889.JPG`, the default output directory contains:
+With `--output`, the program creates `<output_root>/<input_stem>/` and writes 11 files. The default format is uncompressed float32 TIFF; `--output_format tiff` can also be specified explicitly. After export, the program prints the output directory. For `IMG_5229s.JPG`, the default output directory contains:
 
 ```text
-outputs/IMG_0889/
+outputs/IMG_5229s/
     1_before_tm.tiff
     2_before_ccm.tiff
     3_bayer.tiff
@@ -74,13 +74,13 @@ The stage and CFA files contain three-channel images. `9_raw_bayer.tiff` contain
 Values are saved without conversion to 8-bit or gamma encoding. To reload them through OpenCV while retaining their dtype and channel count:
 
 ```python
-image = cv2.imread("outputs/IMG_0889/9_raw_bayer.tiff", cv2.IMREAD_UNCHANGED)
+image = cv2.imread("outputs/IMG_5229s/9_raw_bayer.tiff", cv2.IMREAD_UNCHANGED)
 ```
 
 With `--output_format raw`, the same filenames use the `.npy` extension. These are NumPy arrays preserving the values, shapes, and dtypes—not camera RAW files. Reload them with:
 
 ```python
-image = np.load("outputs/IMG_0889/9_raw_bayer.npy")
+image = np.load("outputs/IMG_5229s/9_raw_bayer.npy")
 ```
 
 Repeated exports for the same input stem, output root, and format overwrite the existing files. Preview-only mode writes no files.
@@ -146,27 +146,6 @@ Install development dependencies and run the pytest suite:
 pipenv install --dev
 pipenv run test
 ```
-
-The suite covers all nine pipeline functions using small synthetic arrays. No GUI or external images are needed.
-
-| Blocks | Checks |
-| --- | --- |
-| Remosaicing, CFA separation, Bayer-plane extraction | GBRG positions, BGR layer order, shapes, float32 outputs, and small/even/odd image dimensions. |
-| Reverse BLC | Black, midtone, and white samples; offset applied only to sampled channels. |
-| Dead-pixel injection | Coordinate mapping, requested defect count, and unique positions, using controlled randomness. |
-| Reverse LSC | Symmetric shading, color-ratio preservation, center/corner values, and zero-strength behavior. |
-| Reverse white balance | BGR gain order, values above 1 preserved, and recovery using forward gains. |
-| Reverse CCM | An asymmetric matrix to detect channel-order mistakes, inverse recovery, and singular-matrix errors. |
-| Reverse tone mapping | Endpoints, midtones, configured exponent, and forward-gamma recovery. |
-
-For a concise result or an individual block:
-
-```bash
-pipenv run test -q
-pipenv run test tests/pipeline_test.py -k black_level
-```
-
-The current suite has 26 passing cases and no expected-failure markers. Quad Bayer behavior and single-row/column LSC handling are not covered by these tests.
 
 ## Notes
 
