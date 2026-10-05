@@ -1,5 +1,7 @@
 # For this project
 test_files/
+outputs/
+.outputs/
 
 # MacOS
 .DS_Store

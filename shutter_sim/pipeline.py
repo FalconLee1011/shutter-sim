@@ -6,9 +6,26 @@ import random
 import cv2
 import numpy as np
 
-from .constants import (BAYER_DXY, BLACK_LEVEL_OFFSET,
-                                   SENSOR_DEFECT_RATE, LSC_K, WB_GAINS, CCM,
-                                   TONE_MAGIC_NUMBER)
+from .constants import (BAYER_DXY, BLACK_LEVEL_OFFSET, CCM, LSC_K,
+                        SENSOR_DEFECT_RATE, TONE_MAGIC_NUMBER, WB_GAINS)
+
+
+def to_bayer_plane(input_img: cv2.Mat, quad: bool = False) -> np.ndarray:
+    """One sample per pixel. GBRG, OpenCV BGR channel order."""
+    height, width, _ = input_img.shape
+    raw_bayer = np.zeros((height, width), np.float32)
+
+    step = 4 if quad else 2
+    for rx in range(0, width, step):
+        for ry in range(0, height, step):
+            for d in BAYER_DXY:
+                dy, dx, ch = d
+                x = rx + dx
+                y = ry + dy
+                if x < width and y < height:
+                    raw_bayer[y][x] = input_img[y][x][ch]
+
+    return raw_bayer
 
 
 def get_cfa_layers(input_img: cv2.Mat, quad: bool = False) -> list[cv2.Mat]:
@@ -33,7 +50,9 @@ def get_cfa_layers(input_img: cv2.Mat, quad: bool = False) -> list[cv2.Mat]:
     return cfa_layers
 
 
-def reverse_black_level_correction(input_img: cv2.Mat, quad: bool = False) -> cv2.Mat:
+def reverse_black_level_correction(
+    input_img: cv2.Mat, quad: bool = False
+) -> cv2.Mat:
     """Reverse Black Level Correction"""
     height, width, _ = input_img.shape
     img = input_img.copy()
@@ -45,8 +64,10 @@ def reverse_black_level_correction(input_img: cv2.Mat, quad: bool = False) -> cv
                 x = rx + dx
                 y = ry + dy
                 if x < width and y < height:
-                    img[y, x, ch] = BLACK_LEVEL_OFFSET + \
-                        (1 - BLACK_LEVEL_OFFSET) * img[y][x][ch]
+                    img[y, x, ch] = (
+                        BLACK_LEVEL_OFFSET
+                        + (1 - BLACK_LEVEL_OFFSET) * img[y][x][ch]
+                    )
 
     return img
 
@@ -59,8 +80,7 @@ def reverse_dead_pixel(input_img: cv2.Mat) -> cv2.Mat:
     positions = random.sample(range(width * height), defect_count)
 
     defect_pixels = [
-        (position % width, position // width)
-        for position in positions
+        (position % width, position // width) for position in positions
     ]
 
     for x, y in defect_pixels:
@@ -95,6 +115,7 @@ def reverse_white_balance(input_img: cv2.Mat) -> cv2.Mat:
             img[y][x][0] = input_img[y][x][0] / WB_GAINS["B"]
             img[y][x][1] = input_img[y][x][1] / WB_GAINS["G"]
             img[y][x][2] = input_img[y][x][2] / WB_GAINS["R"]
+
     return img
 
 
@@ -129,12 +150,16 @@ def reverse_ccm(input_img: cv2.Mat) -> cv2.Mat:
             rb = input_img[y][x][0]
             rg = input_img[y][x][1]
             rr = input_img[y][x][2]
-            img[y][x][0] = rb * inverse[0][0] + rg * \
-                inverse[0][1] + rr * inverse[0][2]
-            img[y][x][1] = rb * inverse[1][0] + rg * \
-                inverse[1][1] + rr * inverse[1][2]
-            img[y][x][2] = rb * inverse[2][0] + rg * \
-                inverse[2][1] + rr * inverse[2][2]
+            img[y][x][0] = (
+                rb * inverse[0][0] + rg * inverse[0][1] + rr * inverse[0][2]
+            )
+            img[y][x][1] = (
+                rb * inverse[1][0] + rg * inverse[1][1] + rr * inverse[1][2]
+            )
+            img[y][x][2] = (
+                rb * inverse[2][0] + rg * inverse[2][1] + rr * inverse[2][2]
+            )
+
     return img
 
 
@@ -147,4 +172,5 @@ def reverse_tone_mapping(input_img: cv2.Mat) -> cv2.Mat:
             img[y][x][0] = (input_img[y][x][0] / 255) ** TONE_MAGIC_NUMBER
             img[y][x][1] = (input_img[y][x][1] / 255) ** TONE_MAGIC_NUMBER
             img[y][x][2] = (input_img[y][x][2] / 255) ** TONE_MAGIC_NUMBER
+
     return img
