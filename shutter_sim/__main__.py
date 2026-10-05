@@ -98,6 +98,7 @@ def main():
         print(
             "No action specified, please specify at least one action via flag --preview or --output"
         )
+        return
 
     raw_img = cv2.imread(args.input_file)
 

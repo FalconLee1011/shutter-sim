@@ -20,7 +20,7 @@ pipenv run shutter-sim -i ./IMG_0889.JPG --preview
 The equivalent module command is `pipenv run python -m shutter_sim`. Export TIFF files, export NumPy arrays, or preview and export the same run:
 
 ```bash
-pipenv run shutter-sim -i ./IMG_0889.JPG --output --output_format tiff --output_root ./outputs
+pipenv run shutter-sim -i ./IMG_0889.JPG --output --output_root ./outputs
 pipenv run shutter-sim -i ./IMG_0889.JPG --output --output_format raw
 pipenv run shutter-sim -i ./IMG_0889.JPG --preview --output --output_format tiff
 pipenv run shutter-sim --help
@@ -32,7 +32,7 @@ pipenv run shutter-sim --help
 | `-p`, `--preview`    | Open the interactive preview windows. Can be combined with `--output`.                          |
 | `-o`, `--output`     | Save the intermediate stages and Bayer/CFA outputs. Takes no value.                             |
 | `--output_root`      | Export root directory; defaults to `./outputs`. Does not enable export by itself.               |
-| `--output_format`    | Use `tiff` for TIFF files or `raw` for NumPy `.npy` arrays. Specify this when using `--output`. |
+| `--output_format`    | Export format: `tiff` (default) or `raw` for NumPy `.npy` arrays. |
 | `-h`, `--help`       | Show command-line help.                                                                         |
 
 ## Previews
@@ -52,7 +52,7 @@ Press a key while an OpenCV window is focused to close the previews. When both a
 
 ## Export
 
-With `--output`, the program creates `<output_root>/<input_stem>/` and writes 11 files. With `--output_format tiff`, these are uncompressed float32 TIFFs. For `IMG_0889.JPG`, the default output directory contains:
+With `--output`, the program creates `<output_root>/<input_stem>/` and writes 11 files. The default format is uncompressed float32 TIFF; `--output_format tiff` can also be specified explicitly. After export, the program prints the output directory. For `IMG_0889.JPG`, the default output directory contains:
 
 ```text
 outputs/IMG_0889/
@@ -85,10 +85,10 @@ image = np.load("outputs/IMG_0889/9_raw_bayer.npy")
 
 Repeated exports for the same input stem, output root, and format overwrite the existing files. Preview-only mode writes no files.
 
-### Current CLI edge cases
+### Action and format behavior
 
-- With neither action flag, the program prints a message but still computes the pipeline without displaying or saving the results.
-- `--output_format` currently has no default; omitting it with `--output` causes an error. Explicitly pass `tiff` or `raw` as shown above. Format names are not validated: `raw` is matched case-insensitively, and any other supplied value selects TIFF.
+- With neither action flag, the program prints a message and exits without running the pipeline.
+- Omitting `--output_format` selects TIFF. Format names are not validated: `raw` is matched case-insensitively, and any other supplied value selects TIFF.
 
 ## Pipeline
 
@@ -134,6 +134,7 @@ Defect positions are randomly generated on each run, so repeated runs can produc
 - [shutter_sim/pipeline.py](./shutter_sim/pipeline.py) — reverse ISP stages and Bayer/CFA helpers.
 - [shutter_sim/constants.py](./shutter_sim/constants.py) — simulation settings.
 - [shutter_sim/io.py](./shutter_sim/io.py) — TIFF and NumPy file saving.
+- [tests/pipeline_test.py](./tests/pipeline_test.py) — pytest checks for all nine pipeline functions.
 
 Run Pylint with `pipenv run lint`.
 
@@ -146,9 +147,26 @@ pipenv install --dev
 pipenv run test
 ```
 
-The tests in [tests/pipeline_test.py](./tests/pipeline_test.py) cover all nine pipeline functions using small synthetic arrays. They check GBRG sampling, channel ordering, transform values and reversibility where applicable, defect placement, array types, and input preservation. No GUI or external images are needed.
+The suite covers all nine pipeline functions using small synthetic arrays. No GUI or external images are needed.
 
-Known limitations are recorded as strict expected failures (`xfail`): the current `quad=True` implementation skips samples rather than creating Quad Bayer blocks, and LSC divides by zero for single-row or single-column inputs. Use `pipenv run test -rx` to see these cases. An unexpected pass fails the suite so the marker can be removed when the behavior is fixed.
+| Blocks | Checks |
+| --- | --- |
+| Remosaicing, CFA separation, Bayer-plane extraction | GBRG positions, BGR layer order, shapes, float32 outputs, and small/even/odd image dimensions. |
+| Reverse BLC | Black, midtone, and white samples; offset applied only to sampled channels. |
+| Dead-pixel injection | Coordinate mapping, requested defect count, and unique positions, using controlled randomness. |
+| Reverse LSC | Symmetric shading, color-ratio preservation, center/corner values, and zero-strength behavior. |
+| Reverse white balance | BGR gain order, values above 1 preserved, and recovery using forward gains. |
+| Reverse CCM | An asymmetric matrix to detect channel-order mistakes, inverse recovery, and singular-matrix errors. |
+| Reverse tone mapping | Endpoints, midtones, configured exponent, and forward-gamma recovery. |
+
+For a concise result or an individual block:
+
+```bash
+pipenv run test -q
+pipenv run test tests/pipeline_test.py -k black_level
+```
+
+The current suite has 26 passing cases and no expected-failure markers. Quad Bayer behavior and single-row/column LSC handling are not covered by these tests.
 
 ## Notes
 
