@@ -82,6 +82,7 @@ def run_pipeline(
         save_image(_output_root, "8_cfa_g", cfa_layers[1], store_raw)
         save_image(_output_root, "8_cfa_r", cfa_layers[2], store_raw)
         save_image(_output_root, "9_raw_bayer", raw_bayer, store_raw)
+        print(f"Output artifacts located at {_output_root}.")
 
 
 def main():
@@ -106,7 +107,7 @@ def main():
         outputs,
         args.output_root or DEFAULT_OUTPUT_ROOT,
         args.input_file,
-        args.output_format,
+        args.output_format or "tiff",
     )
 
 
