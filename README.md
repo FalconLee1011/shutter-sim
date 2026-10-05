@@ -137,6 +137,19 @@ Defect positions are randomly generated on each run, so repeated runs can produc
 
 Run Pylint with `pipenv run lint`.
 
+## Tests
+
+Install development dependencies and run the pytest suite:
+
+```bash
+pipenv install --dev
+pipenv run test
+```
+
+The tests in [tests/pipeline_test.py](./tests/pipeline_test.py) cover all nine pipeline functions using small synthetic arrays. They check GBRG sampling, channel ordering, transform values and reversibility where applicable, defect placement, array types, and input preservation. No GUI or external images are needed.
+
+Known limitations are recorded as strict expected failures (`xfail`): the current `quad=True` implementation skips samples rather than creating Quad Bayer blocks, and LSC divides by zero for single-row or single-column inputs. Use `pipenv run test -rx` to see these cases. An unexpected pass fails the suite so the marker can be removed when the behavior is fixed.
+
 ## Notes
 
 - The pipeline stores images in **float32** for easier development. OpenCV uses BGR channel order internally.

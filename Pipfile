@@ -10,17 +10,13 @@ numpy = "*"
 [dev-packages]
 pylint = "*"
 autoflake = "*"
+pytest = "*"
 
 [requires]
 python_version = "3.11"
 
-[tool.pylint.main]
-extension-pkg-allow-list = ["cv2"]
-
-[tool.pylint.typecheck]
-generated-members = ["cv2.*"]
-
 [scripts]
+test = "python -m pytest"
 shutter-sim = "python -m shutter_sim"
 lint = "pylint ./shutter_sim"
 lint-fix = "autoflake -r --in-place --remove-unused-variables ./shutter_sim"
