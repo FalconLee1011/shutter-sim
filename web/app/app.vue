@@ -29,86 +29,83 @@ const reversedPipelineImages = [
   beforeLsc,
   beforeDpc,
   beforeBlc,
+  rawBayer,
   cfaR,
   cfaB,
   cfaG,
-  rawBayer,
 ];
 
 const pipelineSteps = ref([
   {
     title: "Final Result",
     hoverable: false,
-    description: "The final image",
+    description: "Finished photo. Every later step undoes one stage of the pipeline.",
     isActive: false,
   },
   {
     title: "Tone Mapping",
     hoverable: true,
-    description: "Adjusts brightness and contrast for the final image.",
+    description: "Inverse gamma, 2.2, back toward linear light.",
     isActive: false,
   },
   {
     title: "Color Correction Matrix",
     hoverable: true,
-    description: "Transforms sensor colors into the output color space.",
+    description: "Inverse of the configured CCM.",
     isActive: false,
   },
   {
-    title: "Demosaicing",
+    title: "Demosaic",
     hoverable: true,
-    description: "Reconstructs full-color pixels from the Bayer pattern.",
+    description: "Re-mosaic to one sample per pixel, GBRG.",
     isActive: false,
   },
   {
     title: "White Balance",
     hoverable: true,
-    description: "Balances color channels to make neutral colors look natural.",
+    description: "Divide each channel by its configured gain.",
     isActive: false,
   },
   {
     title: "Lens Shading Correction",
     hoverable: true,
-    description: "Corrects brightness and color variations across the lens.",
+    description: "Darken edges and corners to put the vignette back.",
     isActive: false,
   },
   {
     title: "Defective Pixel Correction",
     hoverable: true,
-    description: "Replaces faulty sensor pixels using neighboring pixels.",
+    description: "Punch random samples to zero.",
     isActive: false,
   },
   {
     title: "Black Level Correction",
     hoverable: true,
-    description: "Subtracts the sensor offset so black areas stay black.",
+    description: "Add the black-level offset back onto the Bayer samples.",
     isActive: false,
   },
   {
     title: "Color Filter Array — Red",
     hoverable: false,
-    description:
-      "Shows the red samples captured by the sensor's color filters.",
+    description: "Isolates the simulated red Bayer samples, not extra step.",
     isActive: false,
   },
   {
     title: "Color Filter Array — Blue",
     hoverable: false,
-    description:
-      "Shows the blue samples captured by the sensor's color filters.",
+    description: "Isolates the simulated blue Bayer samples, not extra step.",
     isActive: false,
   },
   {
     title: "Color Filter Array — Green",
     hoverable: false,
-    description:
-      "Shows the green samples captured by the sensor's color filters.",
+    description: "Isolates the simulated green Bayer samples, not extra step.",
     isActive: false,
   },
   {
     title: "Raw Bayer",
     hoverable: false,
-    description: "Contains the unprocessed sensor samples in a Bayer pattern.",
+    description: "One simulated Bayer sample per pixel.",
     isActive: true,
   },
 ]);
