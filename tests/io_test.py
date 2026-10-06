@@ -1,5 +1,5 @@
-import numpy as np
 import cv2
+import numpy as np
 import pytest
 
 from shutter_sim.io import save_image

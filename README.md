@@ -4,6 +4,10 @@ Shutter Sim is an educational image signal processor (ISP) simulator. Starting w
 
 Please note that this simulation uses parameters that simply spawned on my head rather than measured camera calibration. **It creates a demonstration, not recover the original camera's RAW data.**
 
+## Online Demo
+
+View the online demo here -> https://shutter-sim.xtl.tw
+
 ## Usage
 Use Python 3.11 and Pipenv. From the project directory, install the dependencies:
 
@@ -34,6 +38,36 @@ pipenv run shutter-sim --help
 | `--output_root`      | Export root directory; defaults to `./outputs`. Does not enable export by itself.               |
 | `--output_format`    | Export format: `tiff` (default) or `raw` for NumPy `.npy` arrays. |
 | `-h`, `--help`       | Show command-line help.                                                                         |
+
+## Multipart HTTP test
+
+Start the demo server:
+
+```bash
+pipenv run python -m shutter_sim.web_server
+```
+
+Upload an image with a POST request (the file field is named `raw_image`):
+
+```bash
+curl -i -F 'raw_image=@./example_data/IMG_5229s.JPG' \
+  http://localhost:5050/get-pipeline-results --output /tmp/pipeline-response.http
+```
+
+The saved response includes HTTP headers and a `multipart/mixed` body containing
+two `image/tiff` attachments: `1_before_tm.tiff` (three-channel reverse tone
+mapping) and `9_raw_bayer.tiff` (single-channel GBRG samples taken directly from
+that stage). Both preserve float32 values. This test endpoint only runs those
+two operations, not the full reverse pipeline. Missing, empty, or undecodable
+uploads return HTTP 400 with a JSON error.
+
+Clients must parse the boundary from the response's `Content-Type` and extract
+each part; the entire response is not a single image or ZIP file. The automated
+round-trip test parses both parts and verifies their decoded pixel values:
+
+```bash
+pipenv run python -m pytest tests/web_server_test.py -q
+```
 
 ## Previews
 
