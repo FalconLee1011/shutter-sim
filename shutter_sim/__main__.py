@@ -3,12 +3,11 @@
 import argparse
 import os
 from pathlib import Path
-from typing import Literal
 
 import cv2
 import numpy as np
 
-from .constants import DEFAULT_OUTPUT_ROOT
+from .constants import DEFAULT_OUTPUT_ROOT, SupportedFormats
 from .io import save_image
 from .pipeline import (get_cfa_layers, recreate_bayer,
                        reverse_black_level_correction, reverse_ccm,
@@ -30,7 +29,7 @@ def run_pipeline(
     output: bool,
     output_root: str,
     raw_filename: str,
-    output_format: Literal["tiff", "raw"],
+    output_format: SupportedFormats = "tiff",
 ):
     """Run the main pipeline"""
     before_tm = reverse_tone_mapping(raw_img)
@@ -70,18 +69,17 @@ def run_pipeline(
 
     if output:
         _output_root = os.path.join(output_root, Path(raw_filename).stem)
-        store_raw = output_format.lower() == "raw"
-        save_image(_output_root, "1_before_tm", before_tm, store_raw)
-        save_image(_output_root, "2_before_ccm", before_ccm, store_raw)
-        save_image(_output_root, "3_bayer", bayer, store_raw)
-        save_image(_output_root, "4_before_wb", before_wb, store_raw)
-        save_image(_output_root, "5_before_lsc", before_lsc, store_raw)
-        save_image(_output_root, "6_before_dpc", before_dpc, store_raw)
-        save_image(_output_root, "7_before_blc", before_blc, store_raw)
-        save_image(_output_root, "8_cfa_b", cfa_layers[0], store_raw)
-        save_image(_output_root, "8_cfa_g", cfa_layers[1], store_raw)
-        save_image(_output_root, "8_cfa_r", cfa_layers[2], store_raw)
-        save_image(_output_root, "9_raw_bayer", raw_bayer, store_raw)
+        save_image(_output_root, "1_before_tm", before_tm, output_format)
+        save_image(_output_root, "2_before_ccm", before_ccm, output_format)
+        save_image(_output_root, "3_bayer", bayer, output_format)
+        save_image(_output_root, "4_before_wb", before_wb, output_format)
+        save_image(_output_root, "5_before_lsc", before_lsc, output_format)
+        save_image(_output_root, "6_before_dpc", before_dpc, output_format)
+        save_image(_output_root, "7_before_blc", before_blc, output_format)
+        save_image(_output_root, "8_cfa_b", cfa_layers[0], output_format)
+        save_image(_output_root, "8_cfa_g", cfa_layers[1], output_format)
+        save_image(_output_root, "8_cfa_r", cfa_layers[2], output_format)
+        save_image(_output_root, "9_raw_bayer", raw_bayer, output_format)
         print(f"Output artifacts located at {_output_root}.")
 
 

@@ -1,16 +1,16 @@
 <script setup lang="ts">
-import rawImage from "@/assets/default/0_IMG_5229.jpg";
-import beforeTM from "@/assets/default/1_before_tm.png";
-import beforeCCM from "@/assets/default/2_before_ccm.png";
-import bayer from "@/assets/default/3_bayer.png";
-import beforeWb from "@/assets/default/4_before_wb.png";
-import beforeLsc from "@/assets/default/5_before_lsc.png";
-import beforeDpc from "@/assets/default/6_before_dpc.png";
-import beforeBlc from "@/assets/default/7_before_blc.png";
-import cfaB from "@/assets/default/8_cfa_b.png";
-import cfaG from "@/assets/default/8_cfa_g.png";
-import cfaR from "@/assets/default/8_cfa_r.png";
-import rawBayer from "@/assets/default/9_raw_bayer.png";
+import rawImage from "@/assets/default/IMG_5229/IMG_5229.jpg";
+import beforeTM from "@/assets/default/IMG_5229/1_before_tm.png";
+import beforeCCM from "@/assets/default/IMG_5229/2_before_ccm.png";
+import bayer from "@/assets/default/IMG_5229/3_bayer.png";
+import beforeWb from "@/assets/default/IMG_5229/4_before_wb.png";
+import beforeLsc from "@/assets/default/IMG_5229/5_before_lsc.png";
+import beforeDpc from "@/assets/default/IMG_5229/6_before_dpc.png";
+import beforeBlc from "@/assets/default/IMG_5229/7_before_blc.png";
+import cfaB from "@/assets/default/IMG_5229/8_cfa_b.png";
+import cfaG from "@/assets/default/IMG_5229/8_cfa_g.png";
+import cfaR from "@/assets/default/IMG_5229/8_cfa_r.png";
+import rawBayer from "@/assets/default/IMG_5229/9_raw_bayer.png";
 
 const isShutterClicked = ref(false);
 const isTakingPhoto = ref(false);
@@ -29,17 +29,18 @@ const reversedPipelineImages = [
   beforeLsc,
   beforeDpc,
   beforeBlc,
-  rawBayer,
   cfaR,
   cfaB,
   cfaG,
+  rawBayer,
 ];
 
 const pipelineSteps = ref([
   {
     title: "Final Result",
     hoverable: false,
-    description: "Finished photo. Every later step undoes one stage of the pipeline.",
+    description:
+      "Finished photo. Every later step undoes one stage of the pipeline.",
     isActive: false,
   },
   {
@@ -87,19 +88,19 @@ const pipelineSteps = ref([
   {
     title: "Color Filter Array — Red",
     hoverable: false,
-    description: "Isolates the simulated red Bayer samples, not extra step.",
+    description: "Isolates the simulated red Raw Bayer samples.",
     isActive: false,
   },
   {
     title: "Color Filter Array — Blue",
     hoverable: false,
-    description: "Isolates the simulated blue Bayer samples, not extra step.",
+    description: "Isolates the simulated blue Raw Bayer samples.",
     isActive: false,
   },
   {
     title: "Color Filter Array — Green",
     hoverable: false,
-    description: "Isolates the simulated green Bayer samples, not extra step.",
+    description: "Isolates the simulated green Raw Bayer samples.",
     isActive: false,
   },
   {
@@ -272,25 +273,31 @@ const onShutterClicked = () => {
       <div class="about content">
         <div class="title">Shutter Sim Web</div>
         <p>
-          This demo uses the result from
-          <a href="https://github.com/FalconLee1011/shutter-sim"
-            >shutter-sim project</a
-          >, downsampled to png for better compatibility.
+          Educational reverse image-signal-processor simulator. It walks a
+          finished photo backward through a simplified camera pipeline and shows
+          a synthetic Bayer plane. It does not recover the original RAW.
         </p>
         <p>
-          The project is an educational image signal processor simulator. which
-          works backward through a simplified camera pipeline to visualize the
-          process from the final result to what sensor captured.
+          The shutter replays one precomputed run from
+          <a href="https://github.com/FalconLee1011/shutter-sim">shutter-sim</a
+          >. Frames are display-encoded uint8 PNGs, not the float32 pipeline
+          values.
         </p>
         <p>
-          All the parameters are defined for better visualization result, not from
-          any refernece or calibrated image, this tool does not recover raw file.
+          Gains, color matrix, and black level are chosen so the stages are
+          visible. They are not calibrated to this photo.
         </p>
         <p>
-          To see the demo, click the shutter to start!
+          To see the demo, click the shutter to start.
         </p>
         <div class="actions">
-          <button type="button" class="action close-about" @click="showAbout = false">CLOSE</button>
+          <button
+            type="button"
+            class="action close-about"
+            @click="showAbout = false"
+          >
+            CLOSE
+          </button>
         </div>
       </div>
     </div>
@@ -323,7 +330,7 @@ const onShutterClicked = () => {
             <strong>{{ step.title }}</strong>
             <span>{{ step.description }}</span>
             <span v-if="step.hoverable" class="tip"
-              >Hover the image to see the differece.</span
+              >Hover the image to see the difference.</span
             >
           </button>
         </div>
@@ -362,7 +369,7 @@ const onShutterClicked = () => {
           <div class="preview" :class="{ taking: isTakingPhoto }">
             <img :src="reversedPipelineImages[0]" alt="" />
           </div>
-          <span class="mode active">PIPELINE_PREVIEW</span>
+          <span class="mode active">PIPELINE PREVIEW</span>
           <div class="camera-control">
             <div
               ref="shutter"
@@ -711,7 +718,7 @@ const onShutterClicked = () => {
     box-sizing: border-box;
   }
 
-  .action.reset, 
+  .action.reset,
   .action.about {
     bottom: 0.5rem !important;
   }

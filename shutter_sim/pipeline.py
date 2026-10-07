@@ -10,12 +10,12 @@ from .constants import (BAYER_DXY, BLACK_LEVEL_OFFSET, CCM, LSC_K,
                         SENSOR_DEFECT_RATE, TONE_MAGIC_NUMBER, WB_GAINS)
 
 
-def to_bayer_plane(input_img: cv2.Mat, quad: bool = False) -> np.ndarray:
+def to_bayer_plane(input_img: cv2.Mat) -> np.ndarray:
     """One sample per pixel. GBRG, OpenCV BGR channel order."""
     height, width, _ = input_img.shape
     raw_bayer = np.zeros((height, width), np.float32)
 
-    step = 4 if quad else 2
+    step = 2
     for rx in range(0, width, step):
         for ry in range(0, height, step):
             for d in BAYER_DXY:
@@ -28,7 +28,7 @@ def to_bayer_plane(input_img: cv2.Mat, quad: bool = False) -> np.ndarray:
     return raw_bayer
 
 
-def get_cfa_layers(input_img: cv2.Mat, quad: bool = False) -> list[cv2.Mat]:
+def get_cfa_layers(input_img: cv2.Mat) -> list[cv2.Mat]:
     """Separates R, G, B layers to reflect CFA effect"""
     height, width, _ = input_img.shape
     cfa_layers = [
@@ -37,7 +37,7 @@ def get_cfa_layers(input_img: cv2.Mat, quad: bool = False) -> list[cv2.Mat]:
         np.zeros((height, width, 3), np.float32),  # R
     ]
 
-    step = 4 if quad else 2
+    step = 2
     for rx in range(0, width, step):
         for ry in range(0, height, step):
             for d in BAYER_DXY:
@@ -51,12 +51,12 @@ def get_cfa_layers(input_img: cv2.Mat, quad: bool = False) -> list[cv2.Mat]:
 
 
 def reverse_black_level_correction(
-    input_img: cv2.Mat, quad: bool = False
+    input_img: cv2.Mat
 ) -> cv2.Mat:
     """Reverse Black Level Correction"""
     height, width, _ = input_img.shape
     img = input_img.copy()
-    step = 4 if quad else 2
+    step = 2
     for rx in range(0, width, step):
         for ry in range(0, height, step):
             for d in BAYER_DXY:
@@ -119,11 +119,11 @@ def reverse_white_balance(input_img: cv2.Mat) -> cv2.Mat:
     return img
 
 
-def recreate_bayer(input_img: cv2.Mat, quad=False) -> list[cv2.Mat]:
+def recreate_bayer(input_img: cv2.Mat) -> list[cv2.Mat]:
     """Generate bayer from RGB aka 'remosaicing'."""
     img = input_img.copy()
     height, width, _ = input_img.shape
-    step = 4 if quad else 2
+    step = 2
 
     bayer = np.zeros((height, width, 3), np.float32)
 

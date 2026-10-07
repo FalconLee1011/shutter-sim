@@ -5,26 +5,31 @@ import os
 import cv2
 import numpy as np
 
+from .constants import SupportedFormats
+
 DISPLAY_GAMMA = 1 / 2.2
 
 def to_display_u8(
     input_img: np.ndarray, gamma: float = DISPLAY_GAMMA
 ) -> np.ndarray:
+    """Encode a float32 linear image in 0–1 as display-referred uint8."""
     linear = np.clip(np.asarray(input_img, dtype=np.float32), 0.0, 1.0)
     encoded = np.power(linear, gamma)
     return np.rint(encoded * 255.0).astype(np.uint8)
 
 def save_image(
-    output_root: str, filename: str, input_img: cv2.Mat, raw: bool = False
+    output_root: str, filename: str, input_img: cv2.Mat, export_format: SupportedFormats
 ) -> None:
-    """Saves image to tiff or raw npy."""
+    """Saves image to tiff, raw npy or png"""
     os.makedirs(output_root, exist_ok=True)
     output_path = os.path.join(output_root, filename)
-    if raw:
+    if export_format == "raw":
         np.save(f"{output_path}.npy", input_img)
-    else:
+    elif export_format == "tiff":
         cv2.imwrite(
             f"{output_path}.tiff", input_img, [cv2.IMWRITE_TIFF_COMPRESSION, 1]
         )
-
-    cv2.imwrite(f"{output_path}.png", to_display_u8(input_img))
+    elif export_format == "png":
+        cv2.imwrite(f"{output_path}.png", to_display_u8(input_img))
+    else:
+        print(f"Unsupported format {export_format}")

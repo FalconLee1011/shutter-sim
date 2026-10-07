@@ -1,5 +1,7 @@
 """Stores constants for the pipeline"""
 
+from typing import Literal
+
 SENSOR_BITS = 12
 SENSOR_DEFECT_RATE = 0.00097
 BLACK_LEVELS = 512
@@ -21,3 +23,5 @@ BAYER_DXY = [
 ]
 
 DEFAULT_OUTPUT_ROOT = "./outputs"
+
+SupportedFormats = Literal["tiff", "raw", "png"]

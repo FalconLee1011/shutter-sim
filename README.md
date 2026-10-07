@@ -2,11 +2,16 @@
 
 Shutter Sim is an educational image signal processor (ISP) simulator. Starting with a JPEG, it works backward through a simplified camera pipeline to visualize synthetic Bayer samples and the effects of color correction, white balance, lens shading, defective pixels, and black level.
 
-Please note that this simulation uses parameters that simply spawned on my head rather than measured camera calibration. **It creates a demonstration, not recover the original camera's RAW data.**
+The parameters are illustrative, not measured from a calibrated camera. This is a demonstration. **It does not recover the camera's original RAW**.
 
 ## Online Demo
 
-View the online demo here -> https://shutter-sim.xtl.tw
+View the online preview here -> https://shutter-sim.xtl.tw
+
+NOTE: The online demo replays one precomputed run. The frames are display-encoded uint8 PNGs from the float32 pipeline, clipped and gamma-encoded for the browser. Regenerate them with:
+```bash
+pipenv run shutter-sim -i example_data/IMG_5229.JPG --output --output_format png --output_root web/app/assets/default
+```
 
 ## Usage
 Use Python 3.11 and Pipenv. From the project directory, install the dependencies:
@@ -30,44 +35,15 @@ pipenv run shutter-sim -i ./example_data/IMG_5229s.JPG --preview --output --outp
 pipenv run shutter-sim --help
 ```
 
-| Option               | Meaning                                                                                         |
-| -------------------- | ----------------------------------------------------------------------------------------------- |
-| `-i`, `--input_file` | Input image path; needed to run the pipeline.                                                   |
-| `-p`, `--preview`    | Open the interactive preview windows. Can be combined with `--output`.                          |
-| `-o`, `--output`     | Save the intermediate stages and Bayer/CFA outputs. Takes no value.                             |
-| `--output_root`      | Export root directory; defaults to `./outputs`. Does not enable export by itself.               |
-| `--output_format`    | Export format: `tiff` (default) or `raw` for NumPy `.npy` arrays. |
-| `-h`, `--help`       | Show command-line help.                                                                         |
-
-## Multipart HTTP test
-
-Start the demo server:
-
-```bash
-pipenv run python -m shutter_sim.web_server
-```
-
-Upload an image with a POST request (the file field is named `raw_image`):
-
-```bash
-curl -i -F 'raw_image=@./example_data/IMG_5229s.JPG' \
-  http://localhost:5050/get-pipeline-results --output /tmp/pipeline-response.http
-```
-
-The saved response includes HTTP headers and a `multipart/mixed` body containing
-two `image/tiff` attachments: `1_before_tm.tiff` (three-channel reverse tone
-mapping) and `9_raw_bayer.tiff` (single-channel GBRG samples taken directly from
-that stage). Both preserve float32 values. This test endpoint only runs those
-two operations, not the full reverse pipeline. Missing, empty, or undecodable
-uploads return HTTP 400 with a JSON error.
-
-Clients must parse the boundary from the response's `Content-Type` and extract
-each part; the entire response is not a single image or ZIP file. The automated
-round-trip test parses both parts and verifies their decoded pixel values:
-
-```bash
-pipenv run python -m pytest tests/web_server_test.py -q
-```
+### Available Flags
+| Option               | Meaning                                                                           |
+| -------------------- | --------------------------------------------------------------------------------- |
+| `-i`, `--input_file` | Input image path; needed to run the pipeline.                                     |
+| `-p`, `--preview`    | Open the interactive preview windows. Can be combined with `--output`.            |
+| `-o`, `--output`     | Save the intermediate stages and Bayer/CFA outputs. Takes no value.               |
+| `--output_root`      | Export root directory; defaults to `./outputs`. Does not enable export by itself. |
+| `--output_format`    | Export format: `tiff`(default), `raw` for NumPy `.npy` arrays, or `png`.          |
+| `-h`, `--help`       | Show command-line help.                                                           |
 
 ## Previews
 
@@ -86,7 +62,9 @@ Press a key while an OpenCV window is focused to close the previews. When both a
 
 ## Export
 
-With `--output`, the program creates `<output_root>/<input_stem>/` and writes 11 files. The default format is uncompressed float32 TIFF; `--output_format tiff` can also be specified explicitly. After export, the program prints the output directory. For `IMG_5229s.JPG`, the default output directory contains:
+With `--output`, shutter-sim creates `<output_root>/<input_stem>/` and writes 11 files. The default format is uncompressed float32 TIFF; `--output_format tiff` can also be specified explicitly. 
+
+After export, the program prints the output directory. For `IMG_5229s.JPG`, the default output directory contains:
 
 ```text
 outputs/IMG_5229s/
@@ -104,8 +82,7 @@ outputs/IMG_5229s/
 ```
 
 The stage and CFA files contain three-channel images. `9_raw_bayer.tiff` contains one float32 sample per pixel in a GBRG pattern. It is a synthetic Bayer plane, not a DNG or a camera RAW file with calibration metadata.
-
-Values are saved without conversion to 8-bit or gamma encoding. To reload them through OpenCV while retaining their dtype and channel count:
+To reload them through OpenCV while retaining their dtype and channel count:
 
 ```python
 image = cv2.imread("outputs/IMG_5229s/9_raw_bayer.tiff", cv2.IMREAD_UNCHANGED)
@@ -117,12 +94,14 @@ With `--output_format raw`, the same filenames use the `.npy` extension. These a
 image = np.load("outputs/IMG_5229s/9_raw_bayer.npy")
 ```
 
+When exported as png, the raw 32-bit float will be clipped, applied with display gamma, and quantized to uint8.
+
 Repeated exports for the same input stem, output root, and format overwrite the existing files. Preview-only mode writes no files.
 
 ### Action and format behavior
 
 - With neither action flag, the program prints a message and exits without running the pipeline.
-- Omitting `--output_format` selects TIFF. Format names are not validated: `raw` is matched case-insensitively, and any other supplied value selects TIFF.
+- Omitting `--output_format` selects TIFF. `raw` and `png` are matched case-insensitively. Any other value is rejected and nothing is written.
 
 ## Pipeline
 
@@ -167,7 +146,7 @@ Defect positions are randomly generated on each run, so repeated runs can produc
 - [shutter_sim/__main__.py](./shutter_sim/__main__.py) — CLI, pipeline orchestration, previews, and export selection.
 - [shutter_sim/pipeline.py](./shutter_sim/pipeline.py) — reverse ISP stages and Bayer/CFA helpers.
 - [shutter_sim/constants.py](./shutter_sim/constants.py) — simulation settings.
-- [shutter_sim/io.py](./shutter_sim/io.py) — TIFF and NumPy file saving.
+- [shutter_sim/io.py](./shutter_sim/io.py) — File saving handler.
 - [tests/pipeline_test.py](./tests/pipeline_test.py) — pytest checks for all nine pipeline functions.
 
 Run Pylint with `pipenv run lint`.
