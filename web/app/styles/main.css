@@ -56,15 +56,10 @@
   height: 0;
 }
 
-html{
-  /* min-width: 100vw; */
-}
-
 body {
-  /* min-width: 100vw; */
-  margin: 0 auto;
-  /* top: 0px;
-  left: 0px; */
+  margin: 0;
+  top: 0px;
+  left: 0px;
   background-color: var(--color-bl-1);
   overflow: scroll;
 }

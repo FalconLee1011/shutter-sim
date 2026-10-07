@@ -413,6 +413,7 @@ const onShutterClicked = () => {
   max-width: 45%;
   background-color: var(--color-bl-1o90);
   padding: 1rem;
+  box-sizing: border-box;
 }
 
 .about.content .title {
@@ -426,6 +427,7 @@ const onShutterClicked = () => {
   border-radius: 0;
   margin: 0;
   padding: 0;
+  box-sizing: border-box;
   background: transparent;
   box-shadow: none;
   color: inherit;
@@ -477,6 +479,7 @@ const onShutterClicked = () => {
   --width: 375px;
   --radius: 50px;
   padding: 10px;
+  box-sizing: border-box;
   transition: 1.2s;
 }
 
@@ -651,6 +654,7 @@ const onShutterClicked = () => {
   flex-direction: row;
   gap: 0.75rem;
   padding: 1rem max(1rem, calc(50% - 9rem));
+  box-sizing: border-box;
 }
 
 .pipeline-preview .steps .selection .step {
@@ -661,6 +665,7 @@ const onShutterClicked = () => {
   flex-direction: column;
   gap: 0.5rem;
   padding: 1rem;
+  box-sizing: border-box;
   border: 1px solid currentColor;
   border-radius: 0.5rem;
   background: var(--color-bl-1);
@@ -703,6 +708,7 @@ const onShutterClicked = () => {
     --width: 250px;
     --radius: 30px;
     padding: 10px;
+    box-sizing: border-box;
   }
 
   .action.reset, 
